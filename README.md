@@ -42,14 +42,19 @@ docker run -p 5000:5000 twizer-bg-api
 
 ## Otomatik Deployment
 
-Tek komutla production ortamına kurulum için `deployment/deploy_twizer.sh` script'ini kullanabilirsiniz:
+Tek komutla production ortamına kurulum için `deployment/deploy_twizer.sh` script'ini kullanabilirsiniz. Kendi repo ve domain'inizi environment değişkenleri ile geçirmeniz yeterlidir:
 
 ```bash
-sudo ENABLE_SSL=true DOMAIN=api.twizer.xyz EMAIL=devops@example.com \
+sudo \
+  REPO_URL="https://github.com/<github-kullanici-adiniz>/twizer-bg.git" \
+  APP_DIR="/opt/twizer-bg" \
+  DOMAIN="api.twizer.xyz" \
+  EMAIL="you@example.com" \
+  ENABLE_SSL=true \
   bash deployment/deploy_twizer.sh
 ```
 
-> Varsayılanları `DOMAIN`, `EMAIL`, `APP_DIR`, `REPO_URL` gibi environment değişkenleri ile değiştirebilirsiniz. Ayrıntılı kurulum için [Deployment Rehberi](docs/DEPLOYMENT.md) dosyasına göz atın.
+> Hizmet kullanıcısını `SERVICE_USER` ile değiştirebilir, gerekirse dizinin sahipliğini otomatik devretmek için `CHOWN_APP_DIR=true` ekleyebilirsiniz. Ayrıntılı kurulum için [Deployment Rehberi](docs/DEPLOYMENT.md) dosyasına göz atın.
 
 ## Figma Plugin
 

@@ -4,7 +4,7 @@ set -euo pipefail
 # Tek komutla Twizer BG API'yi kurup ayağa kaldıran script
 # Varsayılanları değiştirmek için environment değişkenleri kullanın:
 #   REPO_URL, APP_DIR, BRANCH, SERVICE_NAME, DOMAIN, EMAIL, ENABLE_SSL,
-#   GUNICORN_HOST, GUNICORN_PORT, PYTHON_BIN
+#   GUNICORN_HOST, GUNICORN_PORT, PYTHON_BIN, SERVICE_USER, CHOWN_APP_DIR
 
 if [[ $EUID -ne 0 ]]; then
   echo "[HATA] Bu script root olarak çalıştırılmalı." >&2
@@ -21,6 +21,8 @@ ENABLE_SSL="${ENABLE_SSL:-true}"
 GUNICORN_HOST="${GUNICORN_HOST:-127.0.0.1}"
 GUNICORN_PORT="${GUNICORN_PORT:-5000}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
+SERVICE_USER="${SERVICE_USER:-www-data}"
+CHOWN_APP_DIR="${CHOWN_APP_DIR:-false}"
 
 log() {
   echo "[INFO] $1"
@@ -56,6 +58,11 @@ pip install -r requirements.txt
 
 deactivate
 
+if [[ "$CHOWN_APP_DIR" == "true" ]]; then
+  log "Uygulama dizini ${SERVICE_USER} kullanıcısına devrediliyor: $APP_DIR"
+  chown -R "${SERVICE_USER}:${SERVICE_USER}" "$APP_DIR"
+fi
+
 step "Systemd servisi yazılıyor: /etc/systemd/system/${SERVICE_NAME}.service"
 cat <<SERVICE >/etc/systemd/system/${SERVICE_NAME}.service
 [Unit]
@@ -64,7 +71,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
+User=${SERVICE_USER}
 WorkingDirectory=${APP_DIR}
 Environment="PATH=${APP_DIR}/venv/bin"
 ExecStart=${APP_DIR}/venv/bin/gunicorn --workers 2 --bind ${GUNICORN_HOST}:${GUNICORN_PORT} app:app
@@ -105,6 +112,9 @@ nginx -t
 systemctl reload nginx
 
 if [[ "$ENABLE_SSL" == "true" ]]; then
+  if [[ "$EMAIL" == "admin@example.com" ]]; then
+    log "SSL isteği için EMAIL değeri gerçek bir adresle güncellenmeli. (EMAIL=$EMAIL)"
+  fi
   if [[ -n "$DOMAIN" && "$EMAIL" != "admin@example.com" ]]; then
     step "Let's Encrypt sertifikası alınıyor"
     certbot --nginx --non-interactive --agree-tos -m "$EMAIL" -d "$DOMAIN" --redirect || log "Certbot isteğe bağlı, hata aldı"

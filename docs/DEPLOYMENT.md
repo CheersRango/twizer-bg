@@ -6,11 +6,25 @@
 
 `deployment/deploy_twizer.sh` script'i Ubuntu 22.04+/24.04 üzerinde tüm adımları (bağımlılık kurulumu, repo klonlama/güncelleme, Python venv, systemd servisi, Nginx reverse proxy ve isteğe bağlı Let's Encrypt) otomatik yapar.
 
+### Hızlı senaryo (kendi domain ve GitHub adresinle)
+
+1. DNS'te alan adını (örn. `api.twizer.xyz`) sunucunun IP'sine yönlendir.
+2. Script'i repo içinden çalıştırırken kendi bilgilerini env olarak geçir:
+
 ```bash
-sudo DOMAIN=api.twizer.xyz EMAIL=devops@example.com \
-  APP_DIR=/opt/twizer-bg REPO_URL=https://github.com/your-org/twizer-bg.git \
+sudo \
+  REPO_URL="https://github.com/<github-kullanici-adiniz>/twizer-bg.git" \
+  APP_DIR="/opt/twizer-bg" \
+  DOMAIN="api.twizer.xyz" \
+  EMAIL="you@example.com" \
+  ENABLE_SSL=true \
   bash deployment/deploy_twizer.sh
 ```
+
+3. Servis durumunu kontrol et: `systemctl status twizer-bg`
+4. Dışarıdan doğrula: `curl -k https://api.twizer.xyz/health`
+
+> SSL için gerçek bir e-posta gereklidir; `EMAIL=admin@example.com` ile certbot çalışmayacaktır.
 
 Önemli environment değişkenleri:
 
@@ -20,12 +34,16 @@ sudo DOMAIN=api.twizer.xyz EMAIL=devops@example.com \
 - `REPO_URL`: Git repo adresi (varsayılan `https://github.com/your-org/twizer-bg.git`).
 - `BRANCH`: Deploy edilecek branch (varsayılan `main`).
 - `ENABLE_SSL`: `true/false` (varsayılan `true`). False yapılırsa certbot çalışmaz.
+- `SERVICE_USER`: Systemd servisinin çalışacağı kullanıcı (varsayılan `www-data`).
+- `CHOWN_APP_DIR`: `true` ise `APP_DIR` dizinini `SERVICE_USER` kullanıcısına devreder (varsayılan `false`).
 
 Script tamamlandığında:
 
 - Systemd servisi: `/etc/systemd/system/twizer-bg.service`
 - Nginx konfigürasyonu: `/etc/nginx/sites-available/twizer-bg`
 - Servis adresi: `http(s)://<DOMAIN>`
+
+> Veya servis kullanıcısını `root` yapmak için çağrı sırasında `SERVICE_USER=root` verebilirsin. `www-data` kullanıyorsan ve dizin izinlerini önceden vermek istersen: `sudo chown -R www-data:www-data /opt/twizer-bg`.
 
 ### Docker ile Deploy (Onerilen)
 
