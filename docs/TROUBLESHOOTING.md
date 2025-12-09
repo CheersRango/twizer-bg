@@ -1,4 +1,4 @@
-# Sorun Giderme Rehberi
+﻿# Sorun Giderme Rehberi
 
 ## "Sunucuya baglanilamadi" Hatasi
 
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-API `http://localhost:5000` adresinde calisacak.
+API `https://api.twizer.xyz` adresinde calisacak.
 
 ### 3. CORS Kontrol
 
@@ -77,4 +77,5 @@ Bu servisler `ai.twizer.xyz` uzerinden sunulur ve her zaman aktif olmayabilir. H
 
 - "Upscale gecici olarak aktif degil" mesaji gosterilir
 - Servis sonra tekrar denenebilir
+
 
