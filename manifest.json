@@ -1,0 +1,14 @@
+{
+  "name": "Twizer BG Pro",
+  "id": "twizer-bg-pro-image-cleaner",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "documentAccess": "dynamic-page",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "reasoning": "Connects to AI backend for image background removal",
+    "allowedDomains": ["https://api.twizer.xyz", "https://ai.twizer.xyz"],
+    "devAllowedDomains": ["https://api.twizer.xyz", "https://ai.twizer.xyz"]
+  }
+}

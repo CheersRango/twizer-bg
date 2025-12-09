@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Twizer BG Pro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #000;
+      --card: rgba(28, 28, 30, 0.85);
+      --card-light: rgba(44, 44, 46, 0.7);
+      --accent: #0A84FF;
+      --accent-hover: #409CFF;
+      --success: #30D158;
+      --warning: #FFD60A;
+      --error: #FF453A;
+      --text: #fff;
+      --text-dim: rgba(255,255,255,0.6);
+      --border: rgba(255,255,255,0.1);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .header { 
+      text-align: center; 
+      margin-bottom: 20px;
+      padding-top: 8px;
+    }
+    .icon {
+      width: 160px; 
+      height: 64px;
+      background: transparent;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      margin: 0 auto 12px;
+      overflow: visible;
+    }
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      max-width: 160px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .status {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+    .status.show { display: block; }
+    .status.loading { background: rgba(255,214,10,0.15); color: var(--warning); }
+    .status.success { background: rgba(48,209,88,0.15); color: var(--success); }
+    .status.error { background: rgba(255,69,58,0.15); color: var(--error); }
+    .preview {
+      background: var(--card-light);
+      border-radius: 12px;
+      min-height: 140px;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .preview img { 
+      max-width: 100%; 
+      max-height: 140px; 
+      border-radius: 6px; 
+    }
+    .preview-empty { 
+      text-align: center; 
+      color: var(--text-dim); 
+      font-size: 12px; 
+      padding: 20px; 
+    }
+    .preview-empty svg {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+      font-family: inherit;
+      margin-bottom: 10px;
+    }
+    button:last-child { margin-bottom: 0; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:hover:not(:disabled) { opacity: 0.9; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--card-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-back {
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      justify-content: flex-start;
+    }
+    .btn-back:hover:not(:disabled) { color: var(--text); }
+    .hidden { display: none !important; }
+    .divider { 
+      height: 1px; 
+      background: var(--border); 
+      margin: 12px 0; 
+    }
+    /* Screen System */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    /* Menu Items */
+    .menu-item {
+      background: var(--card-light);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .menu-item:hover { opacity: 0.85; }
+    .menu-item:last-child { margin-bottom: 0; }
+    .menu-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .menu-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+    .menu-icon.bg { background: rgba(10,132,255,0.2); color: var(--accent); }
+    .menu-icon.watermark { background: rgba(48,209,88,0.2); color: var(--success); }
+    .menu-icon.upscale { background: rgba(255,214,10,0.2); color: var(--warning); }
+    .menu-icon.icons { background: rgba(175,82,222,0.2); color: #AF52DE; }
+    .menu-content { flex: 1; }
+    .menu-title { font-size: 13px; font-weight: 600; }
+    .menu-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .menu-arrow { color: var(--text-dim); font-size: 14px; }
+    .footer { 
+      text-align: center; 
+      font-size: 10px; 
+      color: var(--text-dim);
+      padding: 12px 0;
+      margin-top: 12px;
+    }
+    .loader {
+      width: 12px; height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Icon Picker */
+    .icon-search-section { margin-bottom: 12px; }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .input-text {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-light);
+      color: var(--text);
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .input-text::placeholder { color: var(--text-dim); }
+    .input-text:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .icon-format-section { margin-bottom: 12px; }
+    .icon-format-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+    .radio input[type="radio"] { accent-color: var(--accent); }
+    .radio-disabled { opacity: 0.4; cursor: not-allowed; }
+    .icon-grid-wrapper {
+      max-height: 260px;
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card-light);
+      padding: 8px;
+    }
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .icon-tile {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.1);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.12s ease-out;
+      width: 100%;
+      aspect-ratio: 1;
+    }
+    .icon-tile:hover {
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.04);
+    }
+    .icon-tile svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text);
+    }
+    .icon-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+    .icon-empty {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 16px;
+    }
+    /* Icon Filters */
+    .icon-filter-row {
+      margin-bottom: 12px;
+    }
+    .icon-filter-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .icon-style-row {
+      margin-bottom: 12px;
+    }
+    .icon-style-options {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card-light);
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.12s ease-out;
+      white-space: nowrap;
+    }
+    .pill:hover {
+      border-color: var(--accent);
+      background: rgba(10, 132, 255, 0.1);
+      color: var(--text);
+    }
+    .pill.active {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .pill-sm {
+      padding: 3px 8px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="icon">
+      <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1289.35 535.79">
+        <defs>
+          <style>.cls-1 { fill: #fefefe; }</style>
+        </defs>
+        <path class="cls-1" d="M175.94.35c11.78-.89,23.23.07,34.93,1.14,6.69.95,13.45.25,20.15,1.32,6.75.26,13.23,2.19,19.98,2.3,5.64.2,10.91,1.61,16.39,2.73,16,2.84,32.01,5.44,47.89,8.91,6.99,1.12,13.83,2.84,20.77,4.16,8.83,1.07,17.05,3.86,25.93,4.19,4.78.31,9.33,1.73,14.13,2.05,7.55.69,15.03,2.06,22.56,2.8,11.77.23,23.56.1,35.33-.09,14.38-1.27,28.35-5.01,41.63-10.64,4.58-2.13,8.85-5.05,12.39-8.67,2.52-2.45,4.45-5.03,8.01-6.04,6.98,6.88,11.45,17.14,10.63,27.01.2,6.37-.78,12.65-2.82,18.68-4.01,9.67-10.52,17.86-18.48,24.59-11.34,8.75-24.63,12.5-38.43,15.34-12.06,1.6-24.77.94-36.97.82-13.08-.24-25.74-2.67-38.55-5.06-12.6-1.73-24.96-5.5-37.43-8.16-13.21-4.04-26.76-6.63-39.96-10.74-8.51-2.37-17.16-4.23-25.72-6.39-12.73-3.86-26.09-6.24-39.02-9.14-7.75-2.18-15.67-2.81-23.56-4.28-7.13-.66-14.12-1.41-21.12-2.94-17.86-1.32-35.65-1.91-53.51.01-2.79.5-5.54,1.26-8.34,1.76-10.77,1.66-21.49,4.59-31.44,9.07-9.72,4.29-18.38,10.59-26.62,17.23-5,4.03-9.08,8.86-12.98,13.93-13.66,16.87-19.73,39.49-16.92,60.96,1.58,9.28,4.07,18.26,9.39,26.15,2.76,4.53,6.49,8.11,10.34,11.7,8.82,8.45,20.52,14.03,32.51,16.17,8.24,2.2,16.51,2.05,24.95,1.57,5.44-.45,10.47-1.93,15.79-3.01,4.66-.93,8.63-2.95,12.99-4.75,14.69-5.56,27.17-17,35.73-30.02,3.78-5.51,5.44-12.02,8.53-18.11,3.58,1.78,7.23,3.78,9.64,7.1,3.51,5.48,5.37,11.57,6.33,17.96,1.04,7.48,1.3,15.72-1.18,22.95-2.98,9.96-7.31,19.3-14.29,27.12-7.64,8.45-16.6,16.36-26.93,21.34-5.15,2.6-10.58,4.38-16.12,5.92-4.87,1.33-9.39,3.18-14.49,3.55-5.69.37-11.26,1.58-16.94,2.02-7.8.66-15-1.76-22.89-2.12-10.01-1.66-20.01-4.54-29.08-9.14-8.68-4.03-16.51-10.18-23.6-16.56-6.18-6.16-12.75-11.74-16.83-19.28-9.91-15.13-15.56-32.38-17.96-50.23-.17-8.76-1.45-17.19.01-25.91,1.36-6.93,1.59-13.65,3.84-20.35,2.31-9.47,5.94-18.47,10.14-27.25,5.69-11.01,13.13-21.18,21.71-30.12,7.78-8.04,16.05-15.44,25.55-21.41,7.68-4.76,15.77-9.86,24.21-13.09,9.21-3.64,18.73-7.58,28.4-9.76,7.41-2.1,14.75-4.21,22.42-5.1,12.92-2.66,25.88-2.42,38.98-4.19h0Z"/>
+        <path class="cls-1" d="M323.99,85.03c7.11.51,13.9,2.57,18.52,8.32-3.59,6.84-7.73,13.17-10.73,20.15-6.81,15.79-10.49,33.43-14.32,50.18-3.46,15.23-6.05,30.57-9.14,45.84-1.71,13.23-4.8,26.31-7.47,39.37-4.64,21.64-9.52,43.65-16.5,64.68-4.59,15.79-11.11,31.07-18.32,45.83-5.99,10.71-11.45,21.22-19.7,30.46-7.28,7.93-15.11,15.98-24.09,21.98-7.14,4.18-14.33,7.93-22.33,10.14-7.62,2.04-15.03,3.8-22.97,2.94-10.36-1.65-20.37-2.84-29.11-9.21-6.73-4.65-11.04-12.2-12.12-20.25-.46-5.23,3.43-9.32,6.88-12.7,2.41,1.9,4.87,4,7.59,5.45,4.61,2.41,10.8,2.01,15.85,1.62,8.01-1.79,15.02-6.77,20.41-12.84,4.35-5.02,8.77-10.31,11.62-16.32,2.79-5.32,5.52-10.65,7.99-16.12,4.34-8.65,7.11-17.62,10.37-26.68,7.64-19.73,11.82-41.19,17.13-61.68,2.37-10.94,4.85-21.83,7.55-32.69,3.74-22.24,9.58-43.91,16-65.51,3.39-11.79,8-23.12,13.32-34.16,3.78-7.54,8.75-14.27,14.21-20.67,3.42-4,7.48-7.32,11.93-10.11,7.91-5.26,17.86-8.74,27.43-8.02h0Z"/>
+        <path class="cls-1" d="M700.95,103.7c5.96-1.12,11.67-.18,17.56.75,12.53,2.93,21.96,15.14,21.81,27.97-1.03,6.95-2.89,13.73-6.76,19.67-4.78,6.5-11.83,11.43-19.47,13.98-8.32,2.77-16.66,4.22-25.33,2.03-7.2-1.72-14.04-4.99-17.9-11.6-4.62-6.96-6.84-15.15-4.71-23.41,3.27-16.01,18.54-28.72,34.8-29.39h0Z"/>
+        <path class="cls-1" d="M584.29,183.31c17.18,2.25,30.54,17.89,32.76,34.63,1.35,12.67-.48,24-1.68,36.47-.62,4.47-2.28,8.83-3.32,13.24-2.23,9.29-4.73,18.33-8.36,27.19-2.7,6.52-4.61,13.52-7.79,19.8-3,5.85-5.75,11.79-9.31,17.33-4.1,7.06-8.24,14.24-13.03,21.01-6.26,8.13-12.3,16.35-19.52,23.67-5.37,6.74-12.06,11.75-18.74,17.09-5.08,3.88-11.02,6.81-16.89,9.28-8.34,3.06-17.73,3.67-26.49,2.58-6.48-.94-12.15-3.96-17.69-7.32-6.54-4.48-11.53-11.82-15.44-18.61-4.06-8.21-6.86-17.36-8.83-26.28-3.07,3.7-4.21,8.18-6.89,12.13-6.16,9.29-13.42,17.91-21.51,25.58-4.33,4.18-9.43,6.49-14.42,9.7-6.66,4.26-15.38,5.59-23.16,5.31-7.71.05-15.06-3.09-21.51-7.07-6.38-4.51-11.39-11.19-15.06-18.02-3.98-8.21-7.39-16.24-7.92-25.49-1.13-8.64-1.43-17.34-.12-25.98.33-9.39,2.64-18.31,4.05-27.54,5.21-22.61,10.63-45.52,13.72-68.53.27-7.02,1.54-13.96,1.36-20.97-.15-6.13-2.18-11.27-4.01-16.98,7.01-4.68,15-7.54,23.47-7.7,5.98-.07,12.17-.53,17.87,1.5,7.84,2.73,15.31,7.45,18.87,15.26,4.14,8.45,3.76,16.79,3.77,25.93.08,5.69-.99,11.56-1.98,17.17-2.13,13.72-5.66,27.24-9.2,40.65-1.54,7.52-4.24,14.73-5.79,22.26-2.62,7.45-3.62,15.16-4.83,22.93-.24,5.93-.67,12.48,1.13,18.2,1.08,3.73,4.41,7.4,8.35,8.03,4.58-.34,8.77-2.87,12.12-5.89,5.56-5.26,10.34-11.18,14.28-17.75,2.59-3.98,4.22-8.37,6.52-12.51,2.41-4.31,4.51-8.89,5.99-13.6,1.42-5.38,1.21-11,2.27-16.52,1.21-11.53,2.36-22.95,5-34.26,1.33-8.97,3.6-17.73,6.27-26.39,1.6-5.24,3.47-10.72,6.45-15.35,5.96-8.1,15.15-11.54,24.87-12.43,7.2-.38,14.67.47,20.56,4.97,4.65,3.8,7.83,9.59,8.97,15.44.49,5.66.15,11.42.15,17.1-.17,9.22-3.43,17.15-5.3,25.89-3,11.4-6.91,22.23-9.07,33.88-1.4,6.01-2.68,11.97-2.77,18.17-.03,4.15-1.32,7.95-.65,11.88,1.16,5.85,1.11,11.36,3.53,16.93,1.86,4.68,5.67,9.78,11.01,10.5,5,.57,10.31-1.52,13.79-5.13,9.99-9.22,15.37-21.6,19.98-34.11,4.69-11.51,6.69-23.22,9.28-35.27,1.45-9.9,2.83-19.83,3.87-29.78.56-18,.95-34.72-5.57-51.84-1.55-3.7-3.66-7.01-4.68-10.93,3.19-3.06,6.84-5.47,10.95-7.13,6.04-2.91,13.75-2.76,20.32-2.32h0Z"/>
+        <path class="cls-1" d="M692.42,194.46c5.05,1.07,9.87,2.37,14.01,5.58,4.37,3.12,6.64,8.54,7.72,13.63,1.29,7.62-1.11,13.94-2.33,21.51-3.53,13.84-8.4,27.2-11.99,41.03-3.26,10.82-5.39,22.03-7.66,33.1-1.16,11.85-3.99,21.9-2.14,33.87.75,3.8,1.6,8.2,3.87,11.42,3.09,4.35,8.99,6.28,14.05,4.64,6.48-2.09,11.71-6.59,15.91-11.82,8.94-10.77,14.6-23.11,20.22-35.79,1.23-2.66,1.82-5.25,4.29-7.08,3.66,6.39,6.54,13.27,8.82,20.26,1.7,5.37-.21,10.93-1.97,16.01-3.81,10.09-8.83,19.94-15.32,28.59-4.2,4.92-7.68,10.21-12.35,14.68-4.14,4.05-8.28,8.84-13.33,11.64-6.39,3.6-11.72,7.71-19.2,8.81-9.99,2.2-20.18,2.41-30.03-.63-9.13-3.23-17.44-9.49-22.81-17.58-3.09-5.26-5.68-10.85-7.56-16.66-3.62-10.4-4.18-22.21-4.34-33.14-.24-8.84,1.32-17.1,2.15-25.93.68-8,2.55-15.69,3.85-23.59,4.46-25.24,11.08-50.33,17.97-75.01.84-3.35,1.55-7.12,3.1-10.23.44-1.02,1.79-1.59,2.72-2.1,10.28-4.53,21.1-7.01,32.35-5.21h0Z"/>
+        <path class="cls-1" d="M1277.49,191.02c-6.19-6.23-14.05-8.51-22.47-9.97-9.51-1.13-19.49,2.1-27.61,6.91-14.53,9.92-24.85,25.76-32.85,41.14-6.18,11.29-10.36,22.99-15.03,34.93-.7,2.07-1.21,4.2-1.87,6.28-1-2.74-1.74-5.24-.84-8.13,1.97-7.45,3.61-14.98,5.66-22.41,2.87-12.28,6.61-23.46,6.09-36.31.27-9.46-7.17-18.82-16.58-20.32-6.22-.32-12.91-.62-18.95,1.08-7.66,1.79-16.23,4.84-21.99,10.38-3.59,5.81-3.33,11.53-3.96,17.94-2.54,11.05-2.05,22.3-3.88,33.47-1.54,8.38-1.18,16.93-2.87,25.27-1.28,6.51-2.01,13.09-3.32,19.59-1.12,5.61-1.17,10.86-3.67,16.12-5.04,10.21-12.27,19.59-19.72,28.16-9.72,10.44-21.72,18.63-34.75,24.37-8.34,3.16-16.91,5.27-25.89,4.7-14.15.98-28.34-7.68-34.28-20.51-2.36-4.61-3.57-9.42-5.27-14.29,6.84-2.7,14.19-3.21,20.87-6.24,9.64-4.14,18.93-7.62,27.72-13.5,4.95-3.39,10.22-6.51,14.84-10.32,8.39-7.2,16.1-15.28,22.77-24.09,5.67-8.39,10.18-17.38,12.34-27.33,1.98-6.06,1.82-12.17,1.7-18.46.01-6.41-1.8-13.12-4.92-18.72-5.59-9.03-14.41-16.48-24.62-19.65-9.25-2.84-18.37-5.15-28.14-3.96-7.82,1.25-15.76,2.68-23.34,4.9-12.88,4.16-24.86,11.42-35.53,19.66-5.97,5.24-11.77,9.99-16.48,16.41-13.72,16.84-22.64,36.9-27.29,58.05-1.17,7-2.33,13.99-3.04,21.06-.31,2.86-1.92,4.89-3.48,7.19-4.08,5.83-8.66,11.24-13.71,16.26-5.17,5.11-10.21,10.6-15.91,15.11-2.59,2.18-4.96,4.42-8.16,5.71-4.6-4.28-8.82-8.43-14.29-11.65-11.33-6.19-23.99-8.4-36.81-7.92-5.59-.33-10.75,1.71-16.33,1.27,3.1-3.86,6.95-7.08,10.33-10.71,9.07-9.57,18.01-19.29,27.45-28.55,5.23-5.13,9.84-10.8,15.07-15.94,5.02-4.99,9.69-10.32,14.77-15.26,5.97-6.01,11.58-12.4,17.67-18.3,4.59-4.44,8.68-9.33,13.11-13.94,2.34-2.45,4.06-5.35,4.8-8.68,1.87-8.36.03-17.06-4.9-24.04-2.89-4.97-7.71-8.69-13.74-7.8-5.78,1.19-11.27,3.51-17.17,4.33-6.65.94-13.33,2.68-20.03,2.84-15.93,1.42-32.11,1.07-48.09.72-9.77-1.19-19.54-2.96-29.01-5.67-4.41-1.45-9.3-2.85-13.07-5.58-2.29-1.53-4.4-3.56-6.88-4.77-2.15-.19-3.62,3.17-4.76,4.63-6.48,10.58-10.37,25.2-6.06,37.24,1.36,4.09,3.02,8.66,5.87,11.96,2.64,3.08,5.95,5.57,9.58,7.37,6.5,3.22,13.56,5.43,20.71,6.63,4.52.56,9.15.42,13.71.49,9.65-.08,19.41.04,29.02-.88,5.09-.39,9.88-2.09,14.98-2.39-2.13,4.43-5.72,7.13-8.79,10.85-7.92,8.72-16.49,16.84-24.43,25.56-5.42,6.27-11.51,11.78-17.23,17.76-3.5,3.52-6.5,7.47-10.07,10.93-11.16,11.1-22.49,22.28-33.05,33.98-3.02,3.49-3.89,6.95-3.38,11.53-.06,7.85,3.96,14.3,9.18,19.8,3.49,3.11,6.73,6.33,11.79,5.88,3.05.41,4.65-1.19,6.88-2.88,8.36-7.04,18.84-12.15,29.36-15,5.16-.68,11.6-.8,16.73.02,6.31,2.1,13.55,7.7,13.98,14.87-6.38,3.15-12.91,5.98-19.22,9.27-5.81,2.81-11.14,6.35-17.17,8.71-6.43,3.05-12.63,6.61-19.01,9.8-8.53,5.29-17.39,9.67-25.42,15.68-12.53,8.59-24.23,19.81-31.86,33.04-6.51,12.32-9.51,27.41-6.43,41.14,2.39,11.43,8.65,22.1,19.17,27.77,10.88,6.84,22.49,8.39,34.94,10.18,5.57-.24,11.13-1.6,16.68-2.23,22.4-3.68,41.68-15.27,59.2-29.17,9.21-7.54,17.05-16.34,24.32-25.73,5.35-7.4,9.72-15.21,13.77-23.37,5.99-11.14,9.66-23.17,11.55-35.65,2.23-9.34,2.13-19.46,1.16-28.97-1.12-5.72-2.63-11.49-4.28-17.09,6.24-4.55,11.91-9.9,17.63-15.07,4.72-4.19,8.57-9.11,13.42-13.1,2.94,8.21,5.27,16.09,9.98,23.59,2.9,4.76,6.53,8.78,10.12,13,4.1,4.86,9.57,8.72,14.88,12.16,11.34,7.23,24.14,11.8,37.56,12.97,6.96.16,14.04.47,20.98-.19,9.39-1.64,19.37-3.43,28.17-7.15,9.63-4.43,19.48-9.62,27.47-16.66,5.17-4.21,10.4-8.16,14.88-13.14,4.19-4.41,7.43-9.84,12.01-13.81.7,5.54-.26,10.81-.89,16.27-.41,8.37-.06,19.19,5.42,26.06,3.73,4.18,10.37,6.06,15.72,6.86,5.45,1.1,10.98.9,16.42-.11,5.96-.69,11.5-1.67,16.59-5.07,1.12-.83,2.5-2.14,2.55-3.62.34-3.86.07-7.69.8-11.52.8-6.23.92-12.55,1.62-18.79.8-4.52,1.34-9.07,1.84-13.63.95-6.13,2.46-12.21,3.81-18.26,1.27-9.09,4.22-17.97,6.99-26.71,3.13-10.04,7.47-19.53,11.55-29.2,3.17-7.34,7.52-13.75,11.42-20.75,3.84-5.94,8.07-11.79,13.1-16.79,3.39-3.49,7.96-5.97,12.72-6.91,4.98-.55,8.64,4.68,8.97,9.18,1.38,6.15-2.92,10.68-4.61,16.22,4.7,2.81,8.71,5.69,14.47,5.76,14.46,1.05,28.14-7.78,34.52-20.51,3.45-7.39,6.04-14.87,5.85-23.15.43-11.17-4.09-22.47-11.83-30.49ZM849.32,413.31c-1.4,7.32-2.64,14.64-4.62,21.83-4.6,15.21-11.03,29.56-21.15,41.94-8.33,10.72-20,20.31-33.79,22.41-8.45,2.02-19.09-1.82-22.05-10.53-1.85-6.32-1.09-12.79.84-18.97,4.59-8.27,9.99-16.49,16.82-23.1,18.96-17.11,41.5-28.72,63.71-41.31.79,2.63.73,5.05.24,7.73ZM993.6,293.62c1.37-8.81,2.85-17.49,5.72-25.97,2.13-6.43,4.18-12.95,6.69-19.25,4.3-9.13,9.61-18.02,16.1-25.77,3.8-3.75,9.04-8.53,14.8-7.71,4.42.09,7.86,3.3,9.4,7.26,1.54,4.01,1.11,8.94.89,13.16-1.82,17.62-9.74,33.77-21.54,46.86-8.25,9.51-19.51,18.2-32.29,19.95-.09-2.86-.14-5.68.23-8.53Z"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="status" class="status"></div>
+
+    <!-- HOME SCREEN -->
+    <div class="screen active" data-screen="home">
+      <div class="menu-item" onclick="showScreen('bg')">
+        <div class="menu-icon bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+        </div>
+        <div class="menu-content">
+          <div class="menu-title">Arkaplani Kaldir</div>
+          <div class="menu-desc">AI ile arkaplan silme</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-item" onclick="showScreen('watermark')">
+        <div class="menu-icon watermark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="menu-content">
+          <div class="menu-title">Watermark Kaldir</div>
+          <div class="menu-desc">Filigran temizleme</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-item" onclick="showScreen('upscale')">
+        <div class="menu-icon upscale">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </div>
+        <div class="menu-content">
+          <div class="menu-title">Gorsel Kalitesini Artir</div>
+          <div class="menu-desc">Cozunurluk yukseltme</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-item" onclick="showScreen('icons')">
+        <div class="menu-icon icons">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="M11 13l4 4"/>
+            <path d="M14 9h4"/>
+          </svg>
+        </div>
+        <div class="menu-content">
+          <div class="menu-title">Ikonlar</div>
+          <div class="menu-desc">Hazir ikonlari projene ekle</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- BACKGROUND REMOVAL SCREEN -->
+    <div class="screen" data-screen="bg">
+      <button class="btn-back" onclick="showScreen('home')">← Geri</button>
+      
+      <div class="preview" id="preview-bg">
+        <div class="preview-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <div>Figma'da bir gorsel sec</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnRemoveBg">Arkaplani Kaldir</button>
+      <button class="btn-success hidden" id="btnApplyBg">Figma'ya Uygula</button>
+    </div>
+
+    <!-- WATERMARK REMOVAL SCREEN -->
+    <div class="screen" data-screen="watermark">
+      <button class="btn-back" onclick="showScreen('home')">← Geri</button>
+      
+      <div class="preview" id="preview-watermark">
+        <div class="preview-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <div>Figma'da bir gorsel sec</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnRemoveWatermark">Watermark Kaldir</button>
+      <button class="btn-success hidden" id="btnApplyWatermark">Figma'ya Uygula</button>
+    </div>
+
+    <!-- UPSCALE SCREEN -->
+    <div class="screen" data-screen="upscale">
+      <button class="btn-back" onclick="showScreen('home')">← Geri</button>
+      
+      <div class="preview" id="preview-upscale">
+        <div class="preview-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+          <div>Figma'da bir gorsel sec</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnUpscale">Gorsel Kalitesini Artir</button>
+      <button class="btn-success hidden" id="btnApplyUpscale">Figma'ya Uygula</button>
+    </div>
+
+    <!-- ICON PICKER SCREEN -->
+    <div class="screen" data-screen="icons">
+      <button class="btn-back" onclick="showScreen('home')">← Geri</button>
+      <div class="divider"></div>
+
+      <div class="icon-search-section">
+        <label class="field-label" for="icon-search">Ikon ara</label>
+        <input 
+          id="icon-search" 
+          type="text" 
+          class="input-text" 
+          placeholder="search, arrow, home, play..."
+          oninput="filterIcons()"
+        />
+      </div>
+
+      <div class="icon-filter-row">
+        <div class="icon-filter-categories">
+          <button class="pill active" data-cat="all" onclick="setIconCategory('all')">Tümü</button>
+          <button class="pill" data-cat="Arrows" onclick="setIconCategory('Arrows')">Oklar</button>
+          <button class="pill" data-cat="Interface" onclick="setIconCategory('Interface')">Arayüz</button>
+          <button class="pill" data-cat="Media" onclick="setIconCategory('Media')">Medya</button>
+          <button class="pill" data-cat="Social" onclick="setIconCategory('Social')">Sosyal</button>
+          <button class="pill" data-cat="Files" onclick="setIconCategory('Files')">Dosyalar</button>
+          <button class="pill" data-cat="Communication" onclick="setIconCategory('Communication')">İletişim</button>
+        </div>
+      </div>
+
+      <div class="icon-style-row">
+        <span class="field-label">Stil</span>
+        <div class="icon-style-options">
+          <button class="pill pill-sm active" data-style="outline" onclick="setIconStyle('outline')">Outline</button>
+          <button class="pill pill-sm" data-style="filled" onclick="setIconStyle('filled')">Fill</button>
+          <button class="pill pill-sm" data-style="solid" onclick="setIconStyle('solid')">Solid</button>
+        </div>
+      </div>
+
+      <div class="icon-format-section">
+        <span class="field-label">Cikti formati</span>
+        <div class="icon-format-options">
+          <label class="radio">
+            <input type="radio" name="icon-format" value="svg" checked />
+            <span>SVG (Onerilen)</span>
+          </label>
+          <label class="radio radio-disabled">
+            <input type="radio" name="icon-format" value="png" disabled />
+            <span>PNG (Yakinda)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="icon-grid-wrapper">
+        <div class="icon-grid" id="icon-grid">
+          <!-- JS ile ikonlar doldurulacak -->
+        </div>
+      </div>
+
+      <p class="icon-hint">
+        Bir ikona tiklayinca, Figma dokumanina otomatik eklenir.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer">Twizer AI Backend</div>
+
+  <script>
+    // State
+    var currentScreen = 'home';
+    var currentNodeId = null;
+    var currentNodeName = null;
+    var currentWidth = 400;
+    var currentHeight = 400;
+    var processedImageBase64 = null;
+    var isUpscaled = false;
+    var currentMode = null;
+
+    // Elements
+    var statusEl = document.getElementById('status');
+    var btnRemoveBg = document.getElementById('btnRemoveBg');
+    var btnApplyBg = document.getElementById('btnApplyBg');
+    var btnRemoveWatermark = document.getElementById('btnRemoveWatermark');
+    var btnApplyWatermark = document.getElementById('btnApplyWatermark');
+    var btnUpscale = document.getElementById('btnUpscale');
+    var btnApplyUpscale = document.getElementById('btnApplyUpscale');
+
+    // Screen Navigation
+    function showScreen(screenName) {
+      currentScreen = screenName;
+      var screens = document.querySelectorAll('.screen');
+      for (var i = 0; i < screens.length; i++) {
+        screens[i].classList.remove('active');
+        if (screens[i].getAttribute('data-screen') === screenName) {
+          screens[i].classList.add('active');
+        }
+      }
+      // Reset status on screen change
+      hideStatus();
+      if (screenName === 'home') {
+        resetState();
+      }
+      // Icon screen hook
+      if (screenName === 'icons') {
+        if (iconSearchInput) iconSearchInput.value = '';
+        currentCategory = 'all';
+        currentIconStyle = 'outline';
+        // Reset filter buttons
+        document.querySelectorAll('.icon-filter-categories .pill').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-cat') === 'all');
+        });
+        document.querySelectorAll('.icon-style-options .pill-sm').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-style') === 'outline');
+        });
+        renderIcons();
+      }
+    }
+
+    function resetState() {
+      processedImageBase64 = null;
+      currentMode = null;
+      isUpscaled = false;
+      btnApplyBg.classList.add('hidden');
+      btnApplyWatermark.classList.add('hidden');
+      btnApplyUpscale.classList.add('hidden');
+    }
+
+    // Status
+    function showStatus(msg, type) {
+      statusEl.className = 'status show ' + type;
+      if (type === 'loading') {
+        statusEl.innerHTML = '<span class="loader"></span>' + msg;
+      } else {
+        statusEl.textContent = msg;
+      }
+    }
+
+    function hideStatus() {
+      statusEl.className = 'status';
+      statusEl.textContent = '';
+    }
+
+    // Utils
+    function bytesToBase64(bytes) {
+      var binary = '';
+      for (var i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    function getPreviewEl() {
+      if (currentScreen === 'bg') return document.getElementById('preview-bg');
+      if (currentScreen === 'watermark') return document.getElementById('preview-watermark');
+      if (currentScreen === 'upscale') return document.getElementById('preview-upscale');
+      return null;
+    }
+
+    function getApplyBtn() {
+      if (currentScreen === 'bg') return btnApplyBg;
+      if (currentScreen === 'watermark') return btnApplyWatermark;
+      if (currentScreen === 'upscale') return btnApplyUpscale;
+      return null;
+    }
+
+    // Resize image (for upscale)
+    function resizeImageToOriginalSize(imageBase64, originalWidth, originalHeight, callback) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = originalWidth;
+        canvas.height = originalHeight;
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, originalWidth, originalHeight);
+        var resizedBase64 = canvas.toDataURL('image/png');
+        var base64String = resizedBase64.replace(/^data:image\/\w+;base64,/, '');
+        callback(base64String);
+      };
+      img.onerror = function() {
+        console.error('Gorsel yuklenemedi');
+        callback(null);
+      };
+      img.src = 'data:image/png;base64,' + imageBase64;
+    }
+
+    // BACKGROUND REMOVAL
+    btnRemoveBg.onclick = function() {
+      showStatus('Gorsel aliniyor...', 'loading');
+      btnRemoveBg.disabled = true;
+      btnApplyBg.classList.add('hidden');
+      processedImageBase64 = null;
+      currentMode = 'background';
+      parent.postMessage({ pluginMessage: { type: 'get-image', mode: 'background' } }, '*');
+    };
+
+    function callBackgroundAPI(imageBase64) {
+      showStatus('Arkaplan kaldiriliyor...', 'loading');
+
+      fetch('https://api.twizer.xyz/api/remove-background', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+      })
+      .then(function(response) {
+        if (!response.ok) throw new Error('Sunucu hatasi');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.success && data.image) {
+          var base64 = data.image;
+          if (base64.includes('data:image')) {
+            base64 = base64.replace(/^data:image\/\w+;base64,/, '');
+          }
+          processedImageBase64 = base64;
+          var format = data.format || 'png';
+          var previewEl = getPreviewEl();
+          if (previewEl) previewEl.innerHTML = '<img src="data:image/' + format + ';base64,' + processedImageBase64 + '">';
+          btnApplyBg.classList.remove('hidden');
+          showStatus('Arkaplan kaldirildi.', 'success');
+        } else {
+          throw new Error(data.error || 'Islem basarisiz');
+        }
+        btnRemoveBg.disabled = false;
+      })
+      .catch(function(error) {
+        console.error('Background API error:', error);
+        showStatus('Islem basarisiz oldu, tekrar deneyin.', 'error');
+        btnRemoveBg.disabled = false;
+      });
+    }
+
+    btnApplyBg.onclick = function() { applyToFigma(); };
+
+    // WATERMARK REMOVAL
+    btnRemoveWatermark.onclick = function() {
+      showStatus('Gorsel aliniyor...', 'loading');
+      btnRemoveWatermark.disabled = true;
+      btnApplyWatermark.classList.add('hidden');
+      processedImageBase64 = null;
+      currentMode = 'watermark';
+      isUpscaled = false;
+      parent.postMessage({ pluginMessage: { type: 'get-image', mode: 'watermark' } }, '*');
+    };
+
+    function callWatermarkAPI(imageBase64) {
+      showStatus('Watermark kaldiriliyor...', 'loading');
+
+      fetch('https://ai.twizer.xyz/api/remove-object', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+      })
+      .then(function(response) {
+        if (!response.ok) throw new Error('Sunucu hatasi');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.success && data.data && data.data.images && data.data.images.length > 0) {
+          var imgData = data.data.images[0].base64;
+          if (!imgData) throw new Error('Gorsel alinamadi');
+          
+          var base64 = imgData;
+          if (base64.includes('data:image')) {
+            base64 = base64.replace(/^data:image\/\w+;base64,/, '');
+          }
+          
+          var contentType = data.data.images[0].content_type || 'image/png';
+          var format = contentType.includes('jpeg') ? 'jpeg' : 'png';
+          
+          processedImageBase64 = base64;
+          var previewEl = getPreviewEl();
+          if (previewEl) previewEl.innerHTML = '<img src="data:image/' + format + ';base64,' + processedImageBase64 + '">';
+          btnApplyWatermark.classList.remove('hidden');
+          showStatus('Watermark kaldirildi.', 'success');
+        } else {
+          throw new Error(data.error || 'Islem basarisiz');
+        }
+        btnRemoveWatermark.disabled = false;
+      })
+      .catch(function(error) {
+        console.error('Watermark API error:', error);
+        showStatus('Islem basarisiz oldu, tekrar deneyin.', 'error');
+        btnRemoveWatermark.disabled = false;
+      });
+    }
+
+    btnApplyWatermark.onclick = function() { applyToFigma(); };
+
+    // UPSCALE - AYNEN KORUNUYOR
+    btnUpscale.onclick = function() {
+      showStatus('Gorsel aliniyor...', 'loading');
+      btnUpscale.disabled = true;
+      btnApplyUpscale.classList.add('hidden');
+      processedImageBase64 = null;
+      currentMode = 'upscale';
+      parent.postMessage({ pluginMessage: { type: 'get-image', mode: 'upscale' } }, '*');
+    };
+
+    function callUpscaleAPI(imageBase64) {
+      showStatus('Gorsel kalitesi artiriliyor...', 'loading');
+      
+      console.log('Upscale islemi baslatiliyor...');
+      console.log('Endpoint:', 'https://ai.twizer.xyz/api/upscale');
+
+      fetch('https://ai.twizer.xyz/api/upscale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          image: imageBase64,
+          scale: 2,
+          output_format: 'png'
+        })
+      })
+      .then(function(response) {
+        console.log('Response:', response.status);
+        if (!response.ok) {
+          return response.text().then(function(text) {
+            console.error('HTTP Error:', response.status, text.substring(0, 200));
+            throw new Error('Upscale gecici olarak kullanilamiyor');
+          });
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        console.log('API Response:', data);
+        
+        var imgBase64 = null;
+        var contentType = 'image/png';
+        
+        if (data.success && data.data && data.data.image) {
+          imgBase64 = data.data.image.base64 || data.data.image;
+          contentType = data.data.image.content_type || 'image/png';
+        } else if (data.success && data.data && data.data.images && data.data.images.length > 0) {
+          imgBase64 = data.data.images[0].base64 || data.data.images[0];
+          contentType = data.data.images[0].content_type || 'image/png';
+        } else if (data.success && data.image) {
+          imgBase64 = data.image.base64 || data.image;
+          contentType = data.image.content_type || 'image/png';
+        }
+        
+        if (!imgBase64) {
+          throw new Error('Upscale gecici olarak kullanilamiyor');
+        }
+        
+        var base64 = imgBase64;
+        if (base64.includes('data:image')) {
+          base64 = base64.replace(/^data:image\/\w+;base64,/, '');
+        }
+        
+        var format = contentType.includes('jpeg') ? 'jpeg' : 'png';
+        isUpscaled = true;
+        
+        showStatus('Gorsel boyutlandiriliyor...', 'loading');
+        resizeImageToOriginalSize(base64, currentWidth, currentHeight, function(resizedBase64) {
+          if (resizedBase64) {
+            processedImageBase64 = resizedBase64;
+          } else {
+            processedImageBase64 = base64;
+          }
+          var previewEl = getPreviewEl();
+          if (previewEl) previewEl.innerHTML = '<img src="data:image/' + format + ';base64,' + processedImageBase64 + '">';
+          btnApplyUpscale.classList.remove('hidden');
+          showStatus('Gorsel kalitesi artirildi.', 'success');
+          btnUpscale.disabled = false;
+        });
+      })
+      .catch(function(error) {
+        console.error('Upscale error:', error);
+        showStatus('Upscale gecici olarak aktif degil.', 'error');
+        btnUpscale.disabled = false;
+      });
+    }
+
+    btnApplyUpscale.onclick = function() { applyToFigma(); };
+
+    // ---- ICON PICKER ----
+    // Filter State
+    var currentCategory = 'all';
+    var currentIconStyle = 'outline';
+    var iconSearchInput = document.getElementById('icon-search');
+
+    var ICON_LIBRARY = [
+      {
+        id: 'search',
+        name: 'Search',
+        category: 'Interface',
+        tags: ['search', 'magnify', 'find', 'ara'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"></circle><line x1="16" y1="16" x2="21" y2="21"></line></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'home',
+        name: 'Home',
+        category: 'Interface',
+        tags: ['home', 'house', 'start', 'ev'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 10l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'arrow-up',
+        name: 'Arrow Up',
+        category: 'Arrows',
+        tags: ['arrow', 'up', 'upload', 'yukari'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'arrow-down',
+        name: 'Arrow Down',
+        category: 'Arrows',
+        tags: ['arrow', 'down', 'download', 'asagi'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.25a.75.75 0 01-.53-.22l-8.69-8.69a.75.75 0 011.06-1.06l8.19 8.19 8.19-8.19a.75.75 0 111.06 1.06l-8.69 8.69a.75.75 0 01-.53.22z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'arrow-left',
+        name: 'Arrow Left',
+        category: 'Arrows',
+        tags: ['arrow', 'left', 'back', 'sol'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'arrow-right',
+        name: 'Arrow Right',
+        category: 'Arrows',
+        tags: ['arrow', 'right', 'next', 'sag'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'play',
+        name: 'Play',
+        category: 'Media',
+        tags: ['play', 'video', 'triangle', 'oynat'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="8 5 19 12 8 19 8 5"/></svg>'
+        },
+        defaultVariant: 'filled'
+      },
+      {
+        id: 'pause',
+        name: 'Pause',
+        category: 'Media',
+        tags: ['pause', 'stop', 'durdur'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+        },
+        defaultVariant: 'filled'
+      },
+      {
+        id: 'settings',
+        name: 'Settings',
+        category: 'Interface',
+        tags: ['settings', 'gear', 'cog', 'ayarlar'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><circle cx="12" cy="12" r="3"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'user',
+        name: 'User',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['user', 'person', 'account', 'kullanici'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg>'
+      },
+      {
+        id: 'heart',
+        name: 'Heart',
+        category: 'interface',
+        style: 'fill',
+        colorType: 'one-color',
+        tags: ['heart', 'love', 'like', 'kalp'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+      },
+      {
+        id: 'star',
+        name: 'Star',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['star', 'favorite', 'yildiz'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>'
+      },
+      {
+        id: 'check',
+        name: 'Check',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['check', 'ok', 'done', 'onay'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+      },
+      {
+        id: 'x',
+        name: 'X',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['x', 'close', 'cancel', 'kapat'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      },
+      {
+        id: 'plus',
+        name: 'Plus',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['plus', 'add', 'new', 'ekle'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      },
+      {
+        id: 'minus',
+        name: 'Minus',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['minus', 'remove', 'cikar'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      },
+      {
+        id: 'menu',
+        name: 'Menu',
+        category: 'interface',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['menu', 'hamburger', 'nav'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
+      },
+      {
+        id: 'mail',
+        name: 'Mail',
+        category: 'communication',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['mail', 'email', 'message', 'eposta'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>'
+      },
+      {
+        id: 'phone',
+        name: 'Phone',
+        category: 'communication',
+        style: 'stroke',
+        colorType: 'monochrome',
+        tags: ['phone', 'call', 'telefon'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>'
+      },
+      {
+        id: 'camera',
+        name: 'Camera',
+        tags: ['camera', 'photo', 'kamera'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>'
+      },
+      {
+        id: 'image',
+        name: 'Image',
+        tags: ['image', 'photo', 'picture', 'gorsel'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+      },
+      {
+        id: 'file',
+        name: 'File',
+        category: 'Files',
+        tags: ['file', 'document', 'dosya'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'folder',
+        name: 'Folder',
+        category: 'Files',
+        tags: ['folder', 'directory', 'klasor'],
+        variants: {
+          outline: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
+          filled: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z"/></svg>'
+        },
+        defaultVariant: 'outline'
+      },
+      {
+        id: 'trash',
+        name: 'Trash',
+        tags: ['trash', 'delete', 'remove', 'sil'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>'
+      },
+      {
+        id: 'edit',
+        name: 'Edit',
+        tags: ['edit', 'pencil', 'write', 'duzenle'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+      },
+      {
+        id: 'share',
+        name: 'Share',
+        tags: ['share', 'send', 'paylas'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>'
+      },
+      {
+        id: 'download',
+        name: 'Download',
+        tags: ['download', 'save', 'indir'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      },
+      {
+        id: 'upload',
+        name: 'Upload',
+        tags: ['upload', 'yukle'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+      },
+      {
+        id: 'lock',
+        name: 'Lock',
+        tags: ['lock', 'secure', 'kilit'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'
+      },
+      {
+        id: 'unlock',
+        name: 'Unlock',
+        tags: ['unlock', 'open', 'ac'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/></svg>'
+      },
+      {
+        id: 'eye',
+        name: 'Eye',
+        tags: ['eye', 'view', 'show', 'goz'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      },
+      {
+        id: 'clock',
+        name: 'Clock',
+        tags: ['clock', 'time', 'saat'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+      },
+      {
+        id: 'calendar',
+        name: 'Calendar',
+        tags: ['calendar', 'date', 'takvim'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+      },
+      {
+        id: 'bell',
+        name: 'Bell',
+        tags: ['bell', 'notification', 'alarm', 'bildirim'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>'
+      },
+      {
+        id: 'link',
+        name: 'Link',
+        tags: ['link', 'chain', 'url', 'baglanti'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>'
+      },
+      {
+        id: 'globe',
+        name: 'Globe',
+        tags: ['globe', 'world', 'web', 'dunya'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>'
+      },
+      {
+        id: 'map-pin',
+        name: 'Map Pin',
+        tags: ['map', 'pin', 'location', 'konum'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+      },
+      {
+        id: 'wifi',
+        name: 'Wifi',
+        tags: ['wifi', 'internet', 'signal'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>'
+      },
+      {
+        id: 'zap',
+        name: 'Zap',
+        tags: ['zap', 'lightning', 'bolt', 'simek'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+      },
+      {
+        id: 'sun',
+        name: 'Sun',
+        tags: ['sun', 'light', 'day', 'gunes'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+      },
+      {
+        id: 'moon',
+        name: 'Moon',
+        tags: ['moon', 'night', 'dark', 'ay'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'
+      },
+      {
+        id: 'cloud',
+        name: 'Cloud',
+        tags: ['cloud', 'weather', 'bulut'],
+        svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>'
+      }
+    ];
+
+    function setIconCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.icon-filter-categories .pill').forEach(function(el) {
+        el.classList.toggle('active', el.getAttribute('data-cat') === cat);
+      });
+      renderIcons();
+    }
+
+    function setIconStyle(style) {
+      currentIconStyle = style;
+      document.querySelectorAll('.icon-style-options .pill-sm').forEach(function(el) {
+        el.classList.toggle('active', el.getAttribute('data-style') === style);
+      });
+      renderIcons();
+    }
+
+    function renderIcons() {
+      var iconGridEl = document.getElementById('icon-grid');
+      if (!iconGridEl) return;
+
+      var query = (iconSearchInput ? iconSearchInput.value : '').toLowerCase().trim();
+      iconGridEl.innerHTML = '';
+
+      var filtered = ICON_LIBRARY.filter(function(icon) {
+        // kategori filtresi
+        if (currentCategory !== 'all' && icon.category !== currentCategory) {
+          return false;
+        }
+
+        // arama filtresi
+        if (!query) return true;
+        var haystack = (icon.name + ' ' + icon.tags.join(' ')).toLowerCase();
+        return haystack.indexOf(query) !== -1;
+      });
+
+      if (filtered.length === 0) {
+        iconGridEl.innerHTML = '<div class="icon-empty">Sonuc bulunamadi</div>';
+        return;
+      }
+
+      filtered.forEach(function(icon) {
+        var tile = document.createElement('button');
+        tile.className = 'icon-tile';
+        tile.type = 'button';
+        tile.dataset.iconId = icon.id;
+        tile.setAttribute('title', icon.name);
+
+        // hangi variant?
+        var svg = icon.variants && icon.variants[currentIconStyle];
+        if (!svg) {
+          // seçili stil yoksa defaultVariant'e düş
+          var fallback = icon.defaultVariant || Object.keys(icon.variants || {})[0];
+          svg = icon.variants ? icon.variants[fallback] : icon.svg;
+        }
+
+        tile.innerHTML = svg;
+
+        tile.onclick = function() {
+          insertIcon(icon, svg);
+        };
+
+        iconGridEl.appendChild(tile);
+      });
+    }
+
+    function filterIcons() {
+      renderIcons();
+    }
+
+    function getSelectedIconFormat() {
+      var radios = document.querySelectorAll('input[name="icon-format"]');
+      var value = 'svg';
+      radios.forEach(function(r) {
+        if (r.checked) value = r.value;
+      });
+      return value;
+    }
+
+    function insertIcon(icon) {
+      var format = getSelectedIconFormat();
+
+      if (format !== 'svg') {
+        showStatus('PNG formati henuz desteklenmiyor. Lutfen SVG kullanin.', 'error');
+        return;
+      }
+
+      showStatus('Ikon Figmaya ekleniyor...', 'loading');
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'insert-icon',
+          data: {
+            id: icon.id,
+            name: icon.name,
+            svg: icon.svg
+          }
+        }
+      }, '*');
+    }
+
+    // APPLY TO FIGMA (shared)
+    function applyToFigma() {
+      if (!processedImageBase64) {
+        showStatus('Once islem yapin.', 'error');
+        return;
+      }
+      if (!currentNodeId) {
+        showStatus('Gorsel bulunamadi, tekrar secin.', 'error');
+        return;
+      }
+
+      showStatus('Uygulamyor...', 'loading');
+      var applyBtn = getApplyBtn();
+      if (applyBtn) applyBtn.disabled = true;
+
+      var cleanBase64 = processedImageBase64;
+      if (cleanBase64.includes('data:image')) {
+        cleanBase64 = cleanBase64.replace(/^data:image\/\w+;base64,/, '');
+      }
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'apply-image',
+          data: {
+            imageBase64: cleanBase64,
+            nodeId: currentNodeId,
+            nodeName: currentNodeName || 'Image',
+            width: currentWidth || 400,
+            height: currentHeight || 400,
+            isUpscaled: isUpscaled
+          }
+        }
+      }, '*');
+    }
+
+    // MESSAGE HANDLER
+    window.onmessage = function(event) {
+      var msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === 'image-ready') {
+        var data = msg.data;
+        currentNodeId = data.nodeId;
+        currentNodeName = data.nodeName;
+        currentWidth = data.width;
+        currentHeight = data.height;
+        var base64 = bytesToBase64(data.bytes);
+        
+        var previewEl = getPreviewEl();
+        if (previewEl) previewEl.innerHTML = '<img src="data:image/png;base64,' + base64 + '">';
+        
+        if (msg.mode === 'watermark') {
+          callWatermarkAPI(base64);
+        } else if (msg.mode === 'upscale') {
+          callUpscaleAPI(base64);
+        } else {
+          callBackgroundAPI(base64);
+        }
+      }
+
+      if (msg.type === 'error') {
+        showStatus(msg.message, 'error');
+        btnRemoveBg.disabled = false;
+        btnRemoveWatermark.disabled = false;
+        btnUpscale.disabled = false;
+      }
+
+      if (msg.type === 'applied') {
+        showStatus(msg.message, 'success');
+        var applyBtn = getApplyBtn();
+        if (applyBtn) applyBtn.disabled = false;
+      }
+
+      if (msg.type === 'success') {
+        showStatus(msg.message, 'success');
+      }
+    };
+  </script>
+</body>
+</html>
