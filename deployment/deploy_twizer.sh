@@ -83,6 +83,18 @@ cat <<NGINX >/etc/nginx/sites-available/${SERVICE_NAME}
 server {
     listen 80;
     server_name ${DOMAIN};
+    client_max_body_size 50m;
+
+    # CORS preflight ve header'lar
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+    add_header Access-Control-Allow-Headers "*";
+    if ($request_method = OPTIONS) {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+        add_header Access-Control-Allow-Headers "*";
+        return 204;
+    }
 
     location / {
         proxy_pass http://${GUNICORN_HOST}:${GUNICORN_PORT};

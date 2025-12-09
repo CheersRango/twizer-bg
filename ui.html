@@ -717,7 +717,7 @@
     function callWatermarkAPI(imageBase64) {
       showStatus('Watermark kaldiriliyor...', 'loading');
 
-      fetch('https://ai.twizer.xyz/api/remove-object', {
+      fetch('https://api.twizer.xyz/api/remove-object', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageBase64 })
@@ -772,9 +772,9 @@
       showStatus('Gorsel kalitesi artiriliyor...', 'loading');
       
       console.log('Upscale islemi baslatiliyor...');
-      console.log('Endpoint:', 'https://ai.twizer.xyz/api/upscale');
+      console.log('Endpoint:', 'https://api.twizer.xyz/api/upscale');
 
-      fetch('https://ai.twizer.xyz/api/upscale', {
+      fetch('https://api.twizer.xyz/api/upscale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -844,6 +844,47 @@
     }
 
     btnApplyUpscale.onclick = function() { applyToFigma(); };
+
+    // ---- ICON LIST (ek blok) ----
+    const ICONS = [
+      {
+        name: "Check",
+        svg: `<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg"><path fill="black" d="M18 32l-10-10 2-2 8 8 20-20 2 2z"/></svg>`
+      },
+      {
+        name: "Close",
+        svg: `<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg"><path fill="black" d="M12 12l24 24m0-24L12 36"/></svg>`
+      },
+      {
+        name: "Star",
+        svg: `<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg"><path fill="black" d="M24 4l7 14 15 2-11 11 3 15-14-7-14 7 3-15L2 20l15-2z"/></svg>`
+      }
+    ];
+
+    (function attachStaticIcons() {
+      var iconContainer = document.getElementById("icon-grid") || document.getElementById("icon-list");
+      if (!iconContainer) return;
+      ICONS.forEach(function(icon) {
+        var div = document.createElement("div");
+        div.className = "icon-tile";
+        div.innerHTML = icon.svg;
+        div.onclick = function() {
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "insert-icon",
+                data: {
+                  svg: icon.svg,
+                  name: icon.name
+                }
+              }
+            },
+            "*"
+          );
+        };
+        iconContainer.appendChild(div);
+      });
+    })();
 
     // ---- ICON PICKER ----
     // Filter State
