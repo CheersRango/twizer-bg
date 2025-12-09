@@ -11,7 +11,7 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-REPO_URL="${REPO_URL:-https://github.com/your-org/twizer-bg.git}"
+REPO_URL="${REPO_URL:-https://github.com/CheersRango/twizer-bg.git}"
 APP_DIR="${APP_DIR:-/opt/twizer-bg}"
 BRANCH="${BRANCH:-main}"
 SERVICE_NAME="${SERVICE_NAME:-twizer-bg}"
@@ -33,10 +33,12 @@ step() {
 }
 
 step "Gerekli paketler kuruluyor"
+export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y git nginx certbot python3-certbot-nginx "$PYTHON_BIN" "$PYTHON_BIN"-venv "$PYTHON_BIN"-pip
+apt-get install -y --no-install-recommends git nginx certbot python3-certbot-nginx "$PYTHON_BIN" "$PYTHON_BIN"-venv "$PYTHON_BIN"-pip
 
 step "Uygulama kodu hazırlanıyor ($APP_DIR)"
+mkdir -p "$APP_DIR"
 if [[ ! -d "$APP_DIR/.git" ]]; then
   log "Repo klonlanıyor: $REPO_URL -> $APP_DIR"
   git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"

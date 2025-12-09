@@ -56,6 +56,22 @@ sudo \
 
 > Hizmet kullanıcısını `SERVICE_USER` ile değiştirebilir, gerekirse dizinin sahipliğini otomatik devretmek için `CHOWN_APP_DIR=true` ekleyebilirsiniz. Ayrıntılı kurulum için [Deployment Rehberi](docs/DEPLOYMENT.md) dosyasına göz atın.
 
+### Hazır komut (repo + domain doldurulmuş)
+
+Sunucuda (root) aşağıdaki komut doğrudan çalıştırılabilir. Script'in çalışabilir olması için `chmod +x deployment/deploy_twizer.sh` demeyi unutmayın:
+
+```bash
+sudo \
+  REPO_URL="https://github.com/CheersRango/twizer-bg.git" \
+  APP_DIR="/opt/twizer-bg" \
+  DOMAIN="api.twizer.xyz" \
+  EMAIL="elxsirmedia@gmail.com" \
+  ENABLE_SSL=true \
+  bash deployment/deploy_twizer.sh
+```
+
+> Çalıştırmadan önce DNS'in `api.twizer.xyz` adresini sunucu IP'nize yönlendirdiğinden emin olun. Script sonunda `https://api.twizer.xyz/health` yanıtını kontrol edebilirsiniz.
+
 ## Figma Plugin
 
 1. `Plugins` > `Development` > `Import plugin from manifest...`

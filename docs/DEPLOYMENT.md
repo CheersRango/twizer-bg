@@ -21,6 +21,18 @@ sudo \
   bash deployment/deploy_twizer.sh
 ```
 
+Hazır doldurulmuş örnek (script'i çalıştırmadan önce `chmod +x deployment/deploy_twizer.sh` ve DNS yönlendirmesini yapmayı unutma):
+
+```bash
+sudo \
+  REPO_URL="https://github.com/CheersRango/twizer-bg.git" \
+  APP_DIR="/opt/twizer-bg" \
+  DOMAIN="api.twizer.xyz" \
+  EMAIL="elxsirmedia@gmail.com" \
+  ENABLE_SSL=true \
+  bash deployment/deploy_twizer.sh
+```
+
 3. Servis durumunu kontrol et: `systemctl status twizer-bg`
 4. Dışarıdan doğrula: `curl -k https://api.twizer.xyz/health`
 
@@ -31,7 +43,7 @@ sudo \
 - `DOMAIN`: Nginx server_name ve (ENABLE_SSL=true ise) SSL sertifikası için alan adı.
 - `EMAIL`: Let's Encrypt için e-posta (SSL aktifse zorunlu).
 - `APP_DIR`: Kodun klonlanacağı dizin (varsayılan `/opt/twizer-bg`).
-- `REPO_URL`: Git repo adresi (varsayılan `https://github.com/your-org/twizer-bg.git`).
+- `REPO_URL`: Git repo adresi (varsayılan `https://github.com/CheersRango/twizer-bg.git`).
 - `BRANCH`: Deploy edilecek branch (varsayılan `main`).
 - `ENABLE_SSL`: `true/false` (varsayılan `true`). False yapılırsa certbot çalışmaz.
 - `SERVICE_USER`: Systemd servisinin çalışacağı kullanıcı (varsayılan `www-data`).
