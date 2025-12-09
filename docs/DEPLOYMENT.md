@@ -2,6 +2,31 @@
 
 ## 1. Backend API Deployment
 
+### Tek Komutla Otomatik Kurulum
+
+`deployment/deploy_twizer.sh` script'i Ubuntu 22.04+/24.04 üzerinde tüm adımları (bağımlılık kurulumu, repo klonlama/güncelleme, Python venv, systemd servisi, Nginx reverse proxy ve isteğe bağlı Let's Encrypt) otomatik yapar.
+
+```bash
+sudo DOMAIN=api.twizer.xyz EMAIL=devops@example.com \
+  APP_DIR=/opt/twizer-bg REPO_URL=https://github.com/your-org/twizer-bg.git \
+  bash deployment/deploy_twizer.sh
+```
+
+Önemli environment değişkenleri:
+
+- `DOMAIN`: Nginx server_name ve (ENABLE_SSL=true ise) SSL sertifikası için alan adı.
+- `EMAIL`: Let's Encrypt için e-posta (SSL aktifse zorunlu).
+- `APP_DIR`: Kodun klonlanacağı dizin (varsayılan `/opt/twizer-bg`).
+- `REPO_URL`: Git repo adresi (varsayılan `https://github.com/your-org/twizer-bg.git`).
+- `BRANCH`: Deploy edilecek branch (varsayılan `main`).
+- `ENABLE_SSL`: `true/false` (varsayılan `true`). False yapılırsa certbot çalışmaz.
+
+Script tamamlandığında:
+
+- Systemd servisi: `/etc/systemd/system/twizer-bg.service`
+- Nginx konfigürasyonu: `/etc/nginx/sites-available/twizer-bg`
+- Servis adresi: `http(s)://<DOMAIN>`
+
 ### Docker ile Deploy (Onerilen)
 
 ```bash
